@@ -19,7 +19,7 @@ steps:
   displayName: Install .NET 6
   inputs: 
     packageType: 'sdk'
-    version: 8.x
+    version: 6.x
 
 - task: DotNetCoreCLI@2
   displayName: Build
@@ -30,6 +30,18 @@ steps:
 
 - task: DotNetCoreCLI@2
   inputs:
+    command: 'restore'
+    projects: '**/*.csproj'
+
+- task: DotNetCoreCLI@2
+  inputs:
     command: test
-    projects: '**/TestProject1.csproj'
-    arguments: '--configuration $(buildConfiguration)'
+    projects: '**/webtest.csproj'
+    arguments: '/p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=./MyCoverage/'
+    publishTestResults: true
+
+- task: PublishCodeCoverageResults@1
+  displayName: 'Publish Code Coverage Results'
+  inputs:
+    codeCoverageTool: 'Cobertura'
+    summaryFileLocation: '$(Build.SourcesDirectory)/**/MyCoverage/coverage.cobertura.xml'
